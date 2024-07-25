@@ -13,23 +13,36 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 def generate_launch_description():
-    rs_node_name = 'rs_D455'
+    rs_node_name = 'rs_D457_front'
     rs_node_namespace = ''
 
     rs_global_prefix = f'/{rs_node_name}' if not rs_node_namespace else f'/{rs_node_namespace}/{rs_node_name}'
 
-    parameters=[{
+    parameters=[{   
           'frame_id':'camera_link',
           'subscribe_stereo':True,
-          'subscribe_odom_info':True,
-          'wait_imu_to_init':True}]
+          'subscribe_odom_info':False,
+          'wait_imu_to_init':True,
+          'approx_sync': True,
+          'approx_sync_max_interval': 0.01,
+          'sync_queue_size': 100,
+          'topic_queue_size': 1000,
+          'wait_for_transform': 1.0,
+          'tf_tolerance': 1.0,
+        }]
 
+    # remappings=[
+    #       ('imu', '/imu/data'),
+    #       ('left/image_rect', f'{rs_global_prefix}/infra1/image_rect_raw'),
+    #       ('left/camera_info', f'{rs_global_prefix}/infra1/calibrated_camera_info'),
+    #       ('right/image_rect', f'{rs_global_prefix}/infra2/image_rect_raw'),
+    #       ('right/camera_info', f'{rs_global_prefix}/infra2/calibrated_camera_info')]
     remappings=[
           ('imu', '/imu/data'),
           ('left/image_rect', f'{rs_global_prefix}/infra1/image_rect_raw'),
-          ('left/camera_info', f'{rs_global_prefix}/infra1/calibrated_camera_info'),
+          ('left/camera_info', f'{rs_global_prefix}/infra1/camera_info'),
           ('right/image_rect', f'{rs_global_prefix}/infra2/image_rect_raw'),
-          ('right/camera_info', f'{rs_global_prefix}/infra2/calibrated_camera_info')]
+          ('right/camera_info', f'{rs_global_prefix}/infra2/camera_info')]
 
     return LaunchDescription([
 
@@ -45,10 +58,10 @@ def generate_launch_description():
             remappings=remappings,
             arguments=['-d']),
 
-        Node(
-            package='rtabmap_viz', executable='rtabmap_viz', output='screen',
-            parameters=parameters,
-            remappings=remappings),
+        # Node(
+        #     package='rtabmap_viz', executable='rtabmap_viz', output='screen',
+        #     parameters=parameters,
+        #     remappings=remappings),
                 
         # Compute quaternion of the IMU
         Node(
